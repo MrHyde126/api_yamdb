@@ -18,8 +18,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Название')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(max_length=256, verbose_name='Название'),
+                ),
                 ('slug', models.SlugField(unique=True)),
             ],
             options={
@@ -31,8 +42,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Genre',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Название')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(max_length=256, verbose_name='Название'),
+                ),
                 ('slug', models.SlugField(unique=True)),
             ],
             options={
@@ -44,12 +66,39 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Title',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=256, verbose_name='Название')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(max_length=256, verbose_name='Название'),
+                ),
                 ('year', models.IntegerField(verbose_name='Год выпуска')),
-                ('description', models.TextField(blank=True, verbose_name='Описание')),
-                ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='reviews.category', verbose_name='Категория')),
-                ('genre', models.ManyToManyField(to='reviews.Genre', verbose_name='Жанр')),
+                (
+                    'description',
+                    models.TextField(blank=True, verbose_name='Описание'),
+                ),
+                (
+                    'category',
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to='reviews.category',
+                        verbose_name='Категория',
+                    ),
+                ),
+                (
+                    'genre',
+                    models.ManyToManyField(
+                        to='reviews.Genre', verbose_name='Жанр'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Произведение',
@@ -60,12 +109,54 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Review',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('text', models.TextField(blank=True, verbose_name='Отзыв')),
-                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Время публикации')),
-                ('score', models.IntegerField(validators=[django.core.validators.MinValueValidator(limit_value=1), django.core.validators.MaxValueValidator(limit_value=10)], verbose_name='Оценка')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to=settings.AUTH_USER_MODEL, verbose_name='Рецензирующий')),
-                ('title', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='reviews.title', verbose_name='Отзывы')),
+                (
+                    'pub_date',
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name='Время публикации'
+                    ),
+                ),
+                (
+                    'score',
+                    models.IntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(
+                                limit_value=1
+                            ),
+                            django.core.validators.MaxValueValidator(
+                                limit_value=10
+                            ),
+                        ],
+                        verbose_name='Оценка',
+                    ),
+                ),
+                (
+                    'author',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='reviews',
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name='Рецензирующий',
+                    ),
+                ),
+                (
+                    'title',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='reviews',
+                        to='reviews.title',
+                        verbose_name='Отзывы',
+                    ),
+                ),
             ],
             options={
                 'ordering': ('-pub_date',),
@@ -74,11 +165,41 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Comment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('text', models.TextField(verbose_name='Комментарии')),
-                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Время публикации отзыва')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to=settings.AUTH_USER_MODEL, verbose_name='Автор комментария')),
-                ('review', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='reviews.review', verbose_name='Отзыв')),
+                (
+                    'pub_date',
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        verbose_name='Время публикации отзыва',
+                    ),
+                ),
+                (
+                    'author',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='comments',
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name='Автор комментария',
+                    ),
+                ),
+                (
+                    'review',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='comments',
+                        to='reviews.review',
+                        verbose_name='Отзыв',
+                    ),
+                ),
             ],
             options={
                 'ordering': ('-pub_date',),
@@ -86,6 +207,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='review',
-            constraint=models.UniqueConstraint(fields=('author', 'title_id'), name='unique_review'),
+            constraint=models.UniqueConstraint(
+                fields=('author', 'title_id'), name='unique_review'
+            ),
         ),
     ]

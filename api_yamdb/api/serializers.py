@@ -1,33 +1,31 @@
 from datetime import datetime
-from rest_framework import serializers
+
 from django.core.validators import MaxValueValidator, MinValueValidator
+from rest_framework import serializers
 
 from api_yamdb.settings import MAX_SCORE, MIN_SCORE
-from reviews.models import Category, Comment, Genre, Title, Review
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = '__all__'
 
 
 class TitleSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Title
         fields = '__all__'
 
     def validate(self, data):
-        if self.context['request'].year > datetime.today().year:
+        if data['year'] > datetime.today().year:
             raise serializers.ValidationError(
                 'Нельзя добавлять произведения, которые еще не вышли.'
             )
@@ -71,11 +69,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         validators=[
             MinValueValidator(
                 limit_value=MIN_SCORE,
-                message=f'Оценка не может быть меньше {MIN_SCORE}'
+                message=f'Оценка не может быть меньше {MIN_SCORE}',
             ),
             MaxValueValidator(
                 limit_value=MAX_SCORE,
-                message=f'Оценка не может быть больше {MAX_SCORE}'
+                message=f'Оценка не может быть больше {MAX_SCORE}',
             ),
         ]
     )

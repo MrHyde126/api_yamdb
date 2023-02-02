@@ -5,10 +5,9 @@ from .views import (
     CategoryViewSet,
     CommentViewsSet,
     GenreViewSet,
+    ReviewViewsSet,
     TitleViewSet,
-    ReviewViewsSet
 )
-
 
 router_v1 = DefaultRouter()
 
