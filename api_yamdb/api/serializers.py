@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -9,21 +10,28 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = '__all__'
 
 
 class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        fields = '__all__'
+
+    def validate(self, data):
+        if self.context['request'].year > datetime.today().year:
+            raise serializers.ValidationError(
+                'Нельзя добавлять произведения, которые еще не вышли.'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -35,7 +43,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'pub_date', 'author', 'text')
+        fields = '__all__'
 
 
 class CurrentTitle:
@@ -74,7 +82,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'pub_date', 'author', 'text', 'title', 'score')
+        fields = '__all__'
         validators = [
             serializers.UniqueTogetherValidator(
                 queryset=Review.objects.all(),

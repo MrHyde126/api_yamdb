@@ -49,9 +49,9 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('Название', max_length=256)
-    year = models.IntegerField('Год выпуска')
-    description = models.TextField('Описание', blank=True)
+    name = models.CharField(verbose_name='Название', max_length=256)
+    year = models.IntegerField(verbose_name='Год выпуска')
+    description = models.TextField(verbose_name='Описание', blank=True)
     genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
         Category,
@@ -69,23 +69,6 @@ class Title(models.Model):
         return self.name[:30]
 
 
-# class GenreTitle(models.Model):
-#     title = models.ForeignKey(
-#         Title,
-#         related_name='titles',
-#         null=True,
-#         blank=True,
-#         on_delete=models.SET_NULL,
-#     )
-#     genre = models.ForeignKey(
-#         Genre,
-#         related_name='genres',
-#         null=True,
-#         blank=True,
-#         on_delete=models.SET_NULL,
-#     )
-
-
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
@@ -96,6 +79,7 @@ class Review(models.Model):
     text = models.TextField(
         verbose_name='Отзыв',
         blank=True,
+        null=False,
     )
     pub_date = models.DateTimeField(
         verbose_name='Время публикации',

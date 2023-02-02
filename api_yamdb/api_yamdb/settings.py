@@ -89,9 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -100,9 +98,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'
 
@@ -122,3 +117,5 @@ SIMPLE_JWT = {
 MAX_SCORE = 10
 
 MIN_SCORE = 1
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
