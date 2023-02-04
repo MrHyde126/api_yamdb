@@ -18,7 +18,7 @@ class GenreAdmin(admin.ModelAdmin):
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     search_fields = ('name',)
-    list_filter = ('category', 'genre', 'name', 'year')
+    list_filter = ('category', 'genre', 'year')
 
 
 @admin.register(Comment)
