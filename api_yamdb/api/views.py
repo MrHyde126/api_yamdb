@@ -11,9 +11,9 @@ from .permissions import (
 
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import filters, viewsets, permissions
 
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title, User
 from .serializers import (
     RegistrationSerializer,
     TokenSerializer,
@@ -69,7 +69,6 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
     permission_classes = (IsAdmin,)
 
     @action(
