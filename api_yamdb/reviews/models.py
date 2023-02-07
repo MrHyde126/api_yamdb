@@ -1,6 +1,6 @@
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 
 from api_yamdb.settings import MAX_SCORE, MIN_SCORE
 
@@ -14,26 +14,20 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username',)
 
-    email = models.EmailField(
-        verbose_name='Почтовый адрес',
-        max_length=254,
-        unique=True,
-    )
-    role = models.CharField(
-        verbose_name='Роль',
-        max_length=50,
-        choices=ROLES,
-        default=USER
-    )
-    bio = models.TextField(
-        verbose_name='Информация о пользователе',
-        null=True,
-        blank=True
-    )
+    email = models.EmailField('Почтовый адрес', max_length=254, unique=True)
+    role = models.CharField('Роль', max_length=50, choices=ROLES, default=USER)
+    bio = models.TextField('Информация о пользователе', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
+
+    def __str__(self):
+        return self.username[:30]
 
     @property
     def is_moderator(self):
