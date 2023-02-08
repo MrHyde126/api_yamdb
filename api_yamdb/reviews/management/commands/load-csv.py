@@ -33,9 +33,9 @@ class Command(BaseCommand):
             elif csv_file == 'comments':
                 comment = Comment(
                     id=row['id'],
-                    review=row['review_id'],
+                    review=get_object_or_404(Review, pk=row['review_id']),
                     text=row['text'],
-                    author=row['author'],
+                    author=get_object_or_404(User, pk=row['author']),
                     pub_date=row['pub_date'],
                 )
                 comment.save()

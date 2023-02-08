@@ -14,8 +14,7 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('username',)
+    USERNAME_FIELD = 'username'
 
     email = models.EmailField('Почтовый адрес', max_length=254, unique=True)
     role = models.CharField('Роль', max_length=50, choices=ROLES, default=USER)
@@ -92,8 +91,19 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
-    genre = models.ForeignKey(Genre, null=True, on_delete=models.SET_NULL)
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, verbose_name='Произведение'
+    )
+    genre = models.ForeignKey(
+        Genre, null=True, on_delete=models.SET_NULL, verbose_name='Жанр'
+    )
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведения'
+
+    def __str__(self):
+        return f'{self.title} --> {self.genre}'
 
 
 class Review(models.Model):
