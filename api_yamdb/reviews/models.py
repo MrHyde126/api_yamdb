@@ -1,11 +1,45 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb.settings import MAX_SCORE, MIN_SCORE
 
 
-User = get_user_model()
+class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username',)
+
+    email = models.EmailField('Почтовый адрес', max_length=254, unique=True)
+    role = models.CharField('Роль', max_length=50, choices=ROLES, default=USER)
+    bio = models.TextField('Информация о пользователе', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
+
+    def __str__(self):
+        return self.username[:30]
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
+
+    @property
+    def is_user(self):
+        return self.role == self.USER
 
 
 class Genre(models.Model):

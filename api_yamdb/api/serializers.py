@@ -2,9 +2,71 @@ from datetime import datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from api_yamdb.settings import MAX_SCORE, MIN_SCORE
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(), message='Имя уже существует'
+            )
+        ],
+        required=True,
+    )
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(), message='Почта уже существует'
+            )
+        ]
+    )
+
+    class Meta:
+        fields = 'all'
+        model = User
+
+
+class UserEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+        model = User
+        read_only_fields = ('role',)
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+
+    class Meta:
+        fields = ('username', 'email')
+        model = User
+
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                "Имя пользователя 'me' нельзя использовать"
+            )
+        return value
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
 
 class GenreSerializer(serializers.ModelSerializer):
