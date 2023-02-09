@@ -6,19 +6,29 @@ from api_yamdb.settings import MAX_SCORE, MIN_SCORE
 
 
 class User(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-    ROLES = [
-        (ADMIN, 'Administrator'),
-        (MODERATOR, 'Moderator'),
-        (USER, 'User'),
-    ]
-    USERNAME_FIELD = 'username'
+    username = models.CharField('Логин', max_length=150, unique=True)
+    email = models.EmailField(max_length=254, unique=True)
+    first_name = models.CharField('Имя', max_length=150, blank=True, null=True)
+    last_name = models.CharField(
+        'Фамилия', max_length=150, blank=True, null=True
+    )
+    bio = models.TextField('Биография', blank=True, null=True)
+    role = models.CharField(
+        'Роль',
+        choices=(
+            ('user', 'user'),
+            ('moderator', 'moderator'),
+            ('admin', 'admin'),
+        ),
+        max_length=9,
+        default='user',
+    )
+    confirmation_code = models.TextField(
+        'Проверочный код', blank=True, null=True
+    )
 
-    email = models.EmailField('Почтовый адрес', max_length=254, unique=True)
-    role = models.CharField('Роль', max_length=50, choices=ROLES, default=USER)
-    bio = models.TextField('Информация о пользователе', null=True, blank=True)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ('email',)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -29,16 +39,12 @@ class User(AbstractUser):
         return self.username[:30]
 
     @property
-    def is_moderator(self):
-        return self.role == self.MODERATOR
-
-    @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == 'admin'
 
     @property
-    def is_user(self):
-        return self.role == self.USER
+    def is_moderator(self):
+        return self.role == 'moderator'
 
 
 class Genre(models.Model):
@@ -70,7 +76,7 @@ class Category(models.Model):
 class Title(models.Model):
     name = models.CharField('Название', max_length=256)
     year = models.IntegerField('Год выпуска')
-    description = models.TextField('Описание', blank=True)
+    description = models.TextField('Описание', blank=True, null=True)
     genre = models.ManyToManyField(
         Genre, through='GenreTitle', verbose_name='Жанр'
     )
