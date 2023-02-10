@@ -39,7 +39,7 @@ from reviews.models import Category, Genre, Review, Title, User
 class SendCodeView(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         user = User.objects.filter(
             username=request.data.get('username'),
             email=request.data.get('email'),
@@ -93,7 +93,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def own_profile(self, request):
         user = request.user
         if request.method == 'GET':
-            serializer = self.get_serializer(user)
+            serializer = self.get_serializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif request.method == 'PATCH':
             serializer = self.get_serializer(
