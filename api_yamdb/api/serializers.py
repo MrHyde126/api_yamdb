@@ -1,50 +1,15 @@
-from datetime import datetime
-
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
     RegexValidator,
 )
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from api_yamdb.settings import DEFAULT_FROM_EMAIL, MAX_SCORE, MIN_SCORE
+from .utils import check_email, check_role, check_user, send_mail_token
+from api_yamdb.settings import MAX_SCORE, MIN_SCORE
 from reviews.models import Category, Comment, Genre, Review, Title, User
-
-
-def send_mail_token(user):
-    token = default_token_generator.make_token(user)
-    send_mail(
-        subject='Код для входа на сайт',
-        message=f'Для входа на сайт - {token}',
-        from_email=DEFAULT_FROM_EMAIL,
-        recipient_list=(user.email,),
-    )
-
-
-def check_user(data):
-    if User.objects.filter(username=data['username']):
-        raise serializers.ValidationError(
-            'Пользователь с таким именем уже существует'
-        )
-    elif data['username'] == 'me':
-        raise serializers.ValidationError(
-            'Пользователя с именем "me" нельзя создать'
-        )
-
-
-def check_email(data):
-    if User.objects.filter(email=data['email']):
-        raise serializers.ValidationError(
-            'Пользователь с таким email уже зарегистрирован'
-        )
-
-
-def check_role(data):
-    if data['role'] not in ('user', 'moderator', 'admin'):
-        raise serializers.ValidationError('Выбрана несуществующая роль')
 
 
 class SendCodeSerializer(serializers.ModelSerializer):
@@ -186,13 +151,13 @@ class UserEditMeSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -218,7 +183,7 @@ class TitlePostPatchSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate_year(self, value):
-        if value > datetime.today().year:
+        if value > timezone.now().year:
             raise serializers.ValidationError(
                 'Нельзя добавлять произведения, которые еще не вышли.'
             )

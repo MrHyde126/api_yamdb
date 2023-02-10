@@ -1,11 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Comment, Genre, GenreTitle, Review, Title, User
-
-
-class GenreTitleInline(admin.TabularInline):
-    model = GenreTitle
-    extra = 0
+from .models import Category, Comment, Genre, Review, Title, User
 
 
 @admin.register(User)
@@ -34,7 +29,6 @@ class TitleAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('category', 'genre__name', 'year')
     list_per_page = 30
-    inlines = (GenreTitleInline,)
 
 
 @admin.register(Comment)

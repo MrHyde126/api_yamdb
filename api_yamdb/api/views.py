@@ -4,13 +4,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import (
     filters,
-    generics,
+    mixins,
     permissions,
-    serializers,
     status,
     viewsets,
 )
-from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
@@ -32,15 +31,15 @@ from .serializers import (
     TitleSerializer,
     UserEditMeSerializer,
     UserMeSerializer,
-    send_mail_token,
 )
+from .utils import send_mail_token
 from reviews.models import Category, Genre, Review, Title, User
 
 
 class SendCodeView(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         user = User.objects.filter(
             username=request.data.get('username'),
             email=request.data.get('email'),
@@ -49,21 +48,21 @@ class SendCodeView(APIView):
             send_mail_token(user)
             return Response(request.data, status=status.HTTP_200_OK)
         serializer = SendCodeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class GetTokenView(APIView):
     def post(self, request):
         serializer = GetTokenSerializer(data=request.data)
-        if not serializer.is_valid():
-            raise serializers.ValidationError('Неверные данные')
-        user = get_object_or_404(User, username=serializer.data['username'])
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            User, username=serializer.validated_data['username']
+        )
 
         if default_token_generator.check_token(
-            user, serializer.data['confirmation_code']
+            user, serializer.validated_data['confirmation_code']
         ):
             access_token = AccessToken.for_user(user)
             return Response(
@@ -75,47 +74,44 @@ class GetTokenView(APIView):
         )
 
 
-class UserMeView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request):
-        serializer = UserEditMeSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def patch(self, request):
-        serializer = UserEditMeSerializer(request.user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserCreateAdminView(generics.ListCreateAPIView):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserMeSerializer
-    permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
+    permission_classes = (IsAdmin,)
+    serializer_class = UserMeSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete']
     search_fields = ('username',)
     lookup_field = 'username'
 
-
-class UserPatchAdminView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = UserMeSerializer
-    permission_classes = (IsAdmin,)
-    lookup_field = 'username'
-
-    def get_queryset(self):
-        return User.objects.filter(username=self.kwargs['username'])
-
-    def put(self, request, *args, **kwargs):
-        serializer = UserMeSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_405_METHOD_NOT_ALLOWED
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserEditMeSerializer,
+    )
+    def own_profile(self, request):
+        user = request.user
+        if request.method == 'GET':
+            serializer = self.get_serializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'PATCH':
+            serializer = self.get_serializer(
+                user, data=request.data, partial=True
             )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = (IsAdminOrReadOnly,)
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -123,31 +119,19 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(
-            request.data, status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
 
-    def update(self, request, *args, **kwargs):
-        return Response(
-            request.data, status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
-
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = (IsAdminOrReadOnly,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def get_serializer_context(self, *args, **kwargs):
-        try:
-            if self.kwargs['slug']:
-                raise MethodNotAllowed(method='GET')
-        except KeyError:
-            pass
 
 
 class TitleViewSet(viewsets.ModelViewSet):

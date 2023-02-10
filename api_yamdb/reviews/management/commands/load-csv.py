@@ -7,7 +7,6 @@ from reviews.models import (
     Category,
     Comment,
     Genre,
-    GenreTitle,
     Review,
     Title,
     User,
@@ -40,11 +39,8 @@ class Command(BaseCommand):
                 )
                 comment.save()
             elif csv_file == 'genre_title':
-                genre_title = GenreTitle(
-                    title=get_object_or_404(Title, pk=row['title_id']),
-                    genre=get_object_or_404(Genre, pk=row['genre_id']),
-                )
-                genre_title.save()
+                title = get_object_or_404(Title, pk=row['title_id'])
+                title.genre.set([row['genre_id']])
             elif csv_file == 'genre':
                 genre = Genre(id=row['id'], name=row['name'], slug=row['slug'])
                 genre.save()

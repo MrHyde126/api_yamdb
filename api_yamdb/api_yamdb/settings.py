@@ -127,3 +127,9 @@ DEFAULT_FROM_EMAIL = 'yamdb_admin@yamdb.ru'
 MAX_SCORE = 10
 
 MIN_SCORE = 1
+
+USER = 'user'
+
+MODERATOR = 'moderator'
+
+ADMIN = 'admin'
