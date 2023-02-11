@@ -15,11 +15,10 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 class SendCodeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=User.objects.all()),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Неверно заполнено имя пользователя',
-            ),
+            )
         ],
         required=True,
         max_length=150,
@@ -33,17 +32,20 @@ class SendCodeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = User.objects.filter(
             username=data['username'], email=data['email']
-        )
+        ).last()
         if user:
             send_mail_token(user)
-            raise serializers.ValidationError(
-                'Для входа на сайт введите код отправленный на вашу почту'
-            )
+            return data
         check_user(data)
         check_email(data)
         return data
 
     def create(self, data):
+        user = User.objects.filter(
+            username=data['username'], email=data['email']
+        ).last()
+        if user:
+            return user
         user = User.objects.create(**data)
         send_mail_token(user)
         return user

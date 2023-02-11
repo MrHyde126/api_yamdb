@@ -2,19 +2,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import (
-    filters,
-    mixins,
-    permissions,
-    status,
-    viewsets,
-)
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .filters import TitleFilter
+from .mixins import CreateListDestroyViewSet
 from .permissions import (
     IsAdmin,
     IsAdminModeratorOwnerOrReadOnly,
@@ -32,7 +27,6 @@ from .serializers import (
     UserEditMeSerializer,
     UserMeSerializer,
 )
-from .utils import send_mail_token
 from reviews.models import Category, Genre, Review, Title, User
 
 
@@ -40,13 +34,6 @@ class SendCodeView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        user = User.objects.filter(
-            username=request.data.get('username'),
-            email=request.data.get('email'),
-        ).last()
-        if user:
-            send_mail_token(user)
-            return Response(request.data, status=status.HTTP_200_OK)
         serializer = SendCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -106,12 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
+class GenreViewSet(CreateListDestroyViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -120,12 +102,7 @@ class GenreViewSet(
     lookup_field = 'slug'
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
+class CategoryViewSet(CreateListDestroyViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
