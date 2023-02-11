@@ -5,7 +5,6 @@ from django.core.validators import (
 )
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from .utils import check_email, check_role, check_user, send_mail_token
 from api_yamdb.settings import MAX_SCORE, MIN_SCORE
@@ -74,11 +73,10 @@ class GetTokenSerializer(serializers.ModelSerializer):
 class UserMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=User.objects.all()),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Неверно заполнено имя пользователя',
-            ),
+            )
         ],
         required=True,
         max_length=150,
@@ -114,11 +112,10 @@ class UserMeSerializer(serializers.ModelSerializer):
 class UserEditMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=User.objects.all()),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Неверно заполнено имя пользователя',
-            ),
+            )
         ],
         required=False,
         max_length=150,
